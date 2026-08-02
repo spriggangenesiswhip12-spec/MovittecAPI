@@ -1,10 +1,15 @@
-FROM gradle:8-jdk21 AS build
+FROM gradle:8-jdk22 AS build
+
 WORKDIR /app
+
 COPY . .
+
 RUN gradle build -x test
 
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:22-jdk
+
 WORKDIR /app
+
 COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
