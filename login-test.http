@@ -1,0 +1,7 @@
+POST http://localhost:8080/auth/registro
+Content-Type: application/json
+
+{
+    "correo":"tu_correo",
+    "contrasena":"tu_password"
+  }
