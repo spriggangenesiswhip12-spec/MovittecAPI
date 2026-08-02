@@ -1,10 +1,11 @@
-FROM gradle:8.14-jdk22 AS build
+FROM eclipse-temurin:22-jdk AS build
 
 WORKDIR /app
 
 COPY . .
 
-RUN gradle build -x test
+RUN chmod +x ./gradlew
+RUN ./gradlew build -x test
 
 FROM eclipse-temurin:22-jdk
 
