@@ -50,16 +50,26 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(request.getCorreo());
+        Optional<Usuario> usuarioOpt =
+                usuarioRepository.findByCorreo(request.getCorreo());
 
         if (usuarioOpt.isEmpty()) {
-            return ResponseEntity.status(401).body("Correo incorrecto");
+            return ResponseEntity.status(401)
+                    .body("Correo incorrecto");
         }
 
         Usuario usuario = usuarioOpt.get();
 
+        // VALIDAR SI ESTÁ ACTIVO
+        if (!usuario.getActivo()) {
+            return ResponseEntity.status(403)
+                    .body("Usuario desactivado");
+        }
+
+        // VALIDAR CONTRASEÑA
         if (!usuario.getContrasena().equals(request.getContrasena())) {
-            return ResponseEntity.status(401).body("Contraseña incorrecta");
+            return ResponseEntity.status(401)
+                    .body("Contraseña incorrecta");
         }
 
         LoginResponse response = new LoginResponse(
