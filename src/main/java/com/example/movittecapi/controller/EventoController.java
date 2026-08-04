@@ -1,31 +1,26 @@
 package com.example.movittecapi.controller;
 
-
 import com.example.movittecapi.entity.Evento;
 import com.example.movittecapi.repository.EventoRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/eventos")
 @CrossOrigin(origins = "*")
 public class EventoController {
 
+    private final EventoRepository eventoRepository;
 
-    @Autowired
-    private EventoRepository repository;
-
-
-
-    @GetMapping
-    public List<Evento> listar(){
-
-        return repository.findAll();
-
+    public EventoController(EventoRepository eventoRepository) {
+        this.eventoRepository = eventoRepository;
     }
 
+    @GetMapping
+    public List<Evento> obtenerEventos() {
+        return eventoRepository
+                .findByFechaGreaterThanEqualOrderByFechaAscHoraAsc(LocalDate.now());
+    }
 }
