@@ -6,6 +6,6 @@ import java.util.Optional;
 
 public interface HorarioRepository extends JpaRepository<Horario,Integer> {
 
-    Optional<Horario> findByGrupo(String grupo);
+    Optional<Horario> findByGrupoIgnoreCase(String grupo);
 
 }

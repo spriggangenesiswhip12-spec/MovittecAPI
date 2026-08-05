@@ -20,7 +20,8 @@ public class HorarioController {
     @GetMapping("/{grupo}")
     public Horario obtenerHorario(@PathVariable String grupo){
 
-        return horarioRepository.findByGrupo(grupo)
+        return horarioRepository
+                .findByGrupoIgnoreCase(grupo.trim())
                 .orElse(null);
     }
 }
