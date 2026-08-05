@@ -11,9 +11,10 @@ public class Horario {
     @Column(name = "id_horario")
     private Integer idHorario;
 
+    @Column(nullable = false)
     private String grupo;
 
-    @Column(name = "archivo_pdf")
+    @Column(name = "archivo_pdf", nullable = false)
     private String archivoPdf;
 
 
@@ -25,6 +26,7 @@ public class Horario {
         this.idHorario = idHorario;
     }
 
+
     public String getGrupo() {
         return grupo;
     }
@@ -32,6 +34,7 @@ public class Horario {
     public void setGrupo(String grupo) {
         this.grupo = grupo;
     }
+
 
     public String getArchivoPdf() {
         return archivoPdf;

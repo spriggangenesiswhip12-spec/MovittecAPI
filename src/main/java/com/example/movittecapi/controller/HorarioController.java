@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class HorarioController {
 
+
     private final HorarioRepository horarioRepository;
 
 
@@ -20,8 +21,10 @@ public class HorarioController {
     @GetMapping("/{grupo}")
     public Horario obtenerHorario(@PathVariable String grupo){
 
+        String grupoMayus = grupo.trim().toUpperCase();
+
         return horarioRepository
-                .findByGrupoIgnoreCase(grupo.trim())
+                .findByGrupo(grupoMayus)
                 .orElse(null);
     }
 }
