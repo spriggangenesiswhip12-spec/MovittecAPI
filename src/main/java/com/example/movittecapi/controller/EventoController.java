@@ -5,6 +5,7 @@ import com.example.movittecapi.repository.EventoRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -21,20 +22,15 @@ public class EventoController {
     @GetMapping
     public List<Evento> obtenerEventos() {
 
-        LocalDateTime ahora = LocalDateTime.now();
-
         return eventoRepository.findAll().stream()
-                .filter(evento -> {
-                    LocalDateTime inicio = LocalDateTime.of(evento.getFecha(), evento.getHora());
-                    LocalDateTime fin = inicio.plusHours(2); // duración automática de 2 horas
+                .filter(e -> {
+                    LocalDateTime inicio = LocalDateTime.of(e.getFecha(), e.getHora());
+                    LocalDateTime fin = inicio.plusHours(1);
 
-                    return fin.isAfter(ahora); // solo eventos visibles
+                    return LocalDateTime.now().isBefore(fin);
                 })
-                .sorted((e1, e2) -> {
-                    LocalDateTime d1 = LocalDateTime.of(e1.getFecha(), e1.getHora());
-                    LocalDateTime d2 = LocalDateTime.of(e2.getFecha(), e2.getHora());
-                    return d1.compareTo(d2);
-                })
+                .sorted(Comparator.comparing(Evento::getFecha)
+                        .thenComparing(Evento::getHora))
                 .toList();
     }
 }
