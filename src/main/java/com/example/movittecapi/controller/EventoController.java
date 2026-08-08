@@ -21,14 +21,8 @@ public class EventoController {
 
     @GetMapping
     public List<Evento> obtenerEventos() {
-
-        return eventoRepository.findAll().stream()
-                .filter(e -> {
-                    LocalDateTime inicio = LocalDateTime.of(e.getFecha(), e.getHora());
-                    LocalDateTime fin = inicio.plusHours(1);
-
-                    return LocalDateTime.now().isBefore(fin);
-                })
+        return eventoRepository.findAll()
+                .stream()
                 .sorted(Comparator.comparing(Evento::getFecha)
                         .thenComparing(Evento::getHora))
                 .toList();
