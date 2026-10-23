@@ -9,5 +9,4 @@ public class MovittecApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(MovittecApiApplication.class, args);
     }
-
 }
