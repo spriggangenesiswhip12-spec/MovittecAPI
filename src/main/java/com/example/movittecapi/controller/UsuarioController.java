@@ -1,14 +1,20 @@
 package com.example.movittecapi.controller;
 
+import com.example.movittecapi.dto.EquipoJugadorDTO;
 import com.example.movittecapi.dto.LoginRequest;
 import com.example.movittecapi.dto.LoginResponse;
 import com.example.movittecapi.dto.RegistroRequest;
+import com.example.movittecapi.entity.Categoria;
+import com.example.movittecapi.entity.Equipo;
+import com.example.movittecapi.entity.JugadorEquipo;
 import com.example.movittecapi.entity.Usuario;
 import com.example.movittecapi.repository.CategoriaRepository;
 import com.example.movittecapi.repository.EquipoRepository;
+import com.example.movittecapi.repository.JugadorEquipoRepository;
 import com.example.movittecapi.repository.UsuarioRepository;
 import com.example.movittecapi.service.SesionService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,15 +35,18 @@ public class UsuarioController {
     private final EquipoRepository equipoRepository;
     private final CategoriaRepository categoriaRepository;
     private final SesionService sesionService;
+    private final JugadorEquipoRepository jugadorEquipoRepository;
 
     public UsuarioController(UsuarioRepository usuarioRepository,
                              EquipoRepository equipoRepository,
                              CategoriaRepository categoriaRepository,
-                             SesionService sesionService) {
+                             SesionService sesionService,
+                             JugadorEquipoRepository jugadorEquipoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.equipoRepository = equipoRepository;
         this.categoriaRepository = categoriaRepository;
         this.sesionService = sesionService;
+        this.jugadorEquipoRepository = jugadorEquipoRepository;
     }
 
     private static boolean vacio(String s) {
@@ -47,6 +57,7 @@ public class UsuarioController {
         return ResponseEntity.status(codigo).body(Map.of("mensaje", texto));
     }
 
+    @Transactional
     @PostMapping("/registro")
     public ResponseEntity<?> registro(@RequestBody RegistroRequest r) {
 
@@ -69,10 +80,16 @@ public class UsuarioController {
         if (!equipoRepository.existsByNombre(equipo)) {
             return mensaje(400, "El equipo no existe");
         }
-        if (!categoriaRepository.existsByNombre(categoria)) {
+        Categoria categoriaDb = categoriaRepository.findFirstByNombre(categoria).orElse(null);
+        if (categoriaDb == null) {
             return mensaje(400, "La categoría no existe");
         }
-        if (usuarioRepository.existsByEquipoAndDorsal(equipo, r.dorsal())) {
+        Equipo equipoDb = equipoRepository
+                .findFirstByNombreAndCategoriaId(equipo, categoriaDb.getIdCategoria()).orElse(null);
+        if (equipoDb == null) {
+            return mensaje(400, "Ese equipo no pertenece a esa categoría");
+        }
+        if (jugadorEquipoRepository.existsByEquipoIdAndDorsal(equipoDb.getId(), r.dorsal())) {
             return mensaje(400, "Ese dorsal ya está ocupado en tu equipo");
         }
 
@@ -90,6 +107,9 @@ public class UsuarioController {
         usuario.setDorsal(r.dorsal());
 
         usuarioRepository.save(usuario);
+
+        jugadorEquipoRepository.save(new JugadorEquipo(
+                usuario.getIdUsuario(), equipoDb.getId(), categoriaDb.getIdCategoria(), r.dorsal()));
 
         return ResponseEntity.ok().body(Map.of("mensaje", "Usuario registrado"));
     }
@@ -122,6 +142,10 @@ public class UsuarioController {
                 ? sesionService.crearToken(usuario)
                 : null;
 
+        List<EquipoJugadorDTO> equipos = EquipoJugadorDTO.de(
+                jugadorEquipoRepository.equiposDe(usuario.getIdUsuario()));
+        EquipoJugadorDTO principal = equipos.isEmpty() ? null : equipos.get(0);
+
         LoginResponse response = new LoginResponse(
                 usuario.getIdUsuario(),
                 usuario.getNombre(),
@@ -130,10 +154,11 @@ public class UsuarioController {
                 usuario.getCorreo(),
                 tipo,
                 usuario.getFotoPerfil(),
-                usuario.getEquipo(),
-                usuario.getCategoria(),
-                usuario.getDorsal(),
-                token
+                principal == null ? null : principal.equipo(),
+                principal == null ? null : principal.categoria(),
+                principal == null ? null : principal.dorsal(),
+                token,
+                equipos
         );
 
         return ResponseEntity.ok(response);

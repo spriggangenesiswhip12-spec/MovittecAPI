@@ -12,4 +12,6 @@ public interface EquipoRepository extends JpaRepository<Equipo, Integer> {
     List<Equipo> findByCategoriaIdOrderByNombreAsc(Integer categoriaId);
 
     boolean existsByNombre(String nombre);
+
+    java.util.Optional<Equipo> findFirstByNombreAndCategoriaId(String nombre, Integer categoriaId);
 }

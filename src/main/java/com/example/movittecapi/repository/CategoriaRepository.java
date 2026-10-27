@@ -10,4 +10,6 @@ public interface CategoriaRepository extends JpaRepository<Categoria, Integer> {
     List<Categoria> findAllByOrderByNombreAsc();
 
     boolean existsByNombre(String nombre);
+
+    java.util.Optional<Categoria> findFirstByNombre(String nombre);
 }
